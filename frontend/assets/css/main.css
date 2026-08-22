@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+
+/*
+  Neuromoyo design tokens.
+
+  Palette is deliberately NOT the cream+terracotta or near-black+neon defaults --
+  this is a clinical tool used by health workers on cheap Android screens in
+  primary-care settings, so it leans calm/legible over decorative. Deep teal reads
+  as clinical trust without the sterile cold of hospital blue; gold is reserved
+  for "needs a closer look" states so it never gets diluted into generic accent use.
+*/
+@theme {
+  --color-ink: #142520;
+  --color-ink-soft: #3f544c;
+  --color-paper: #f5f8f6;
+  --color-mist: #e6ede9;
+  --color-card: #ffffff;
+
+  --color-teal-50: #eaf5f1;
+  --color-teal-100: #cfe8de;
+  --color-teal-600: #0e6b5c;
+  --color-teal-700: #0a5548;
+  --color-teal-900: #0a352d;
+
+  --color-gold-100: #f7e8ce;
+  --color-gold-600: #c98a2b;
+  --color-gold-700: #a06c1e;
+
+  --color-rust-100: #f3ded6;
+  --color-rust-600: #b3442b;
+  --color-rust-700: #8f3421;
+
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

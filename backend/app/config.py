@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     database_url: str = ""  # required in real use; empty only breaks DB-backed routes
     supabase_url: str = ""
     supabase_service_role_key: str = ""  # server-side only, never expose to frontend
+    supabase_jwt_secret: str = ""        # "Legacy JWT Secret" (HS256) -- verifies clinician session tokens
 
     # --- App ---
     environment: str = "development"

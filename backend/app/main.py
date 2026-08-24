@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 
 from .config import get_settings
 from .db import init_db
-from .routers import health, patients, assessments
+from .routers import health, patients, assessments, clinicians
 
 settings = get_settings()
 
@@ -29,6 +29,15 @@ async def lifespan(app: FastAPI):
     else:
         print("WARNING: DATABASE_URL is not set -- patient/assessment routes will fail. "
               "Add your Supabase connection string to backend/.env")
+
+    if not settings.supabase_jwt_secret and not settings.supabase_url:
+        print("WARNING: Neither SUPABASE_URL nor SUPABASE_JWT_SECRET is set -- every "
+              "authenticated route will return 401/500. Set SUPABASE_URL (covers the "
+              "default ES256/JWKS signing most Supabase projects use) and/or "
+              "SUPABASE_JWT_SECRET (only needed for older HS256 \"Legacy JWT Secret\" "
+              "projects) in backend/.env, then RESTART this process -- editing .env alone "
+              "does not take effect on a running --reload server, since settings are only "
+              "read once at process startup.")
 
     # Warm the voice model + SHAP explainer once so the first request is fast.
     print("Starting warm-up: loading voice model and SHAP explainer...")
@@ -57,6 +66,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(patients.router)
 app.include_router(assessments.router)
+app.include_router(clinicians.router)
 
 
 @app.exception_handler(Exception)

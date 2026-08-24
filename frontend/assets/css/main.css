@@ -49,3 +49,13 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Print (used by the "Download as PDF" button on the report page, which just
+   triggers window.print() -- no PDF library needed, the browser's own print-to-
+   PDF does the work). Anything with `print:hidden` (app chrome, nav, buttons)
+   disappears; the report card gets a plain white background and full width
+   since it's the only thing left on the page. */
+@media print {
+  body { background: white; }
+  main > div { max-width: none !important; padding: 0 !important; }
+}

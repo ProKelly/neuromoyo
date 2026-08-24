@@ -6,8 +6,43 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class ClinicianRead(BaseModel):
+    id: uuid.UUID
+    email: str
+    full_name: str | None
+    role: str
+    facility: str | None
+    created_at: datetime
+
+
+class ClinicianUpdate(BaseModel):
+    """Admin-only: assign a clinician's facility and/or promote their role."""
+    full_name: str | None = None
+    role: str | None = None  # "clinician" | "admin"
+    facility: str | None = None
+
+
 class PatientCreate(BaseModel):
     display_id: str
+    age: int | None = None
+    sex: str | None = None
+    language: str | None = None
+    # Optional on input: a non-admin clinician never needs to send this -- the
+    # server assigns it from their own Clinician.facility automatically (see
+    # routers/patients.py). Only an admin's request can set it explicitly,
+    # since admins aren't tied to one facility.
+    facility: str | None = None
+    existing_pd_diagnosis: bool | None = None
+    on_pd_medication: bool | None = None
+
+
+class PatientUpdate(BaseModel):
+    """All fields optional -- send only what changed. `facility` is accepted here
+    but routers/patients.py rejects it from a non-admin: reassigning a patient to
+    a different facility is an admin action, not something a clinician should be
+    able to do to their own record (it would be a way to move a patient out of
+    -- or into -- your own visibility by editing a string)."""
+    display_id: str | None = None
     age: int | None = None
     sex: str | None = None
     language: str | None = None
@@ -69,3 +104,45 @@ class ScreenResultOut(BaseModel):
     narrative: str | None = None
     biomarkers: list[BiomarkerRead] = []
     disclaimer: str | None = None
+
+
+class TrendPoint(BaseModel):
+    date: datetime
+    value: float
+
+
+class BiomarkerTrend(BaseModel):
+    code: str
+    label: str
+    points: list[TrendPoint]
+    direction: str  # "increasing" | "decreasing" | "stable" | "insufficient_data"
+
+
+class TaskSummary(BaseModel):
+    task: str  # "reading" | "vowel" | "ddk"
+    count: int
+    last_date: datetime | None
+    latest_risk_score: float | None = None  # only ever set for "reading"
+    latest_risk_band: str | None = None
+
+
+class PatientReport(BaseModel):
+    """A synthesized cross-task clinical summary -- the point being that no single
+    task's output is the report; a neurologist reading this should see the same
+    combined picture the AssessmentModality architecture was built to eventually
+    fuse (see app/reporting.py), just assembled by rules today rather than a
+    trained fusion model."""
+    patient: PatientRead
+    generated_at: datetime
+    date_range_start: datetime | None
+    date_range_end: datetime | None
+    total_assessments: int
+    task_summaries: list[TaskSummary]
+    latest_reading: AssessmentRead | None
+    reading_points: list[TrendPoint]
+    reading_trend_direction: str | None  # "increasing" | "decreasing" | "stable" | "insufficient_data" | None
+    biomarker_trends: list[BiomarkerTrend]
+    recommendation_tier: str  # "priority_referral" | "monitor" | "routine" | "insufficient_data"
+    recommendation_text: str
+    supporting_findings: list[str]
+    disclaimer: str

@@ -21,6 +21,27 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class Clinician(SQLModel, table=True):
+    """A logged-in user of the console -- role/facility scoping lives here, not in
+    the Supabase Auth token itself (the token only proves *who*, not *what they can
+    see*). `id` deliberately matches the Supabase `auth.users.id` UUID rather than
+    being auto-generated, so a verified token maps straight to a row with no extra
+    lookup table.
+
+    Row is auto-created on first successful login (see app/auth.py) with
+    role="clinician" and no facility -- an admin assigns facility/role afterward via
+    `PATCH /api/clinicians/{id}`. A clinician with no facility sees no patients
+    (safe default) until assigned; this is deliberately restrictive for a first
+    pilot rather than defaulting new logins to "see everything".
+    """
+    id: uuid.UUID = Field(primary_key=True)
+    email: str = Field(index=True)
+    full_name: str | None = None
+    role: str = Field(default="clinician")  # "clinician" | "admin"
+    facility: str | None = None  # must match Patient.facility text for scoping to apply
+    created_at: datetime = Field(default_factory=_now)
+
+
 class Patient(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     display_id: str = Field(index=True)  # clinic-assigned patient code, not a govt ID

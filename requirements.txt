@@ -18,3 +18,7 @@ pydantic-settings>=2.2
 
 sqlmodel>=0.0.16     # ORM over SQLAlchemy 2.0, used for Patient/Assessment/Observation
 psycopg[binary]>=3.1 # Postgres driver for Supabase
+
+pyjwt[crypto]>=2.8   # verifies Supabase Auth tokens: ES256/RS256 via JWKS (default for
+                     # newer projects) or HS256 legacy secret. [crypto] pulls in
+                     # `cryptography`, required for the ES256/RS256 path.

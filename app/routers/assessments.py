@@ -8,8 +8,9 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session
 
+from ..auth import get_current_clinician
 from ..db import get_session
-from ..models import Assessment, Observation, Patient
+from ..models import Assessment, Clinician, Observation, Patient
 from ..schemas import ScreenResultOut
 from ..modalities.voice import screen as voice_screen
 from ..modalities.voice import vowel as voice_vowel
@@ -36,7 +37,7 @@ def _cleanup(paths: list[str]) -> None:
             pass
 
 
-def _persist(session: Session, patient_id: uuid.UUID, performer: str | None, result: dict) -> Assessment | None:
+def _persist(session: Session, patient_id: uuid.UUID, performer: str, result: dict) -> Assessment | None:
     """Audio itself is never stored (deleted after scoring, per the original design's
     privacy stance) -- only the derived biomarkers and scores are persisted."""
     if not result.get("ok"):
@@ -72,22 +73,32 @@ def _persist(session: Session, patient_id: uuid.UUID, performer: str | None, res
     return assessment
 
 
-def _require_patient(session: Session, patient_id: uuid.UUID) -> Patient:
+def _require_patient(session: Session, patient_id: uuid.UUID, clinician: Clinician) -> Patient:
     patient = session.get(Patient, patient_id)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
+    if clinician.role != "admin" and (not clinician.facility or patient.facility != clinician.facility):
+        raise HTTPException(status_code=404, detail="Patient not found")
     return patient
+
+
+def _performer_label(clinician: Clinician) -> str:
+    """The assessment's `performer` field now always comes from the authenticated
+    session rather than a free-text form field -- accurate attribution matters once
+    real clinics are involved, and a logged-in identity is more trustworthy than
+    whatever a client happened to send."""
+    return clinician.full_name or clinician.email
 
 
 @router.post("/reading", response_model=ScreenResultOut)
 async def screen_reading(
     patient_id: uuid.UUID = Form(...),
-    performer: str | None = Form(None),
     audio: list[UploadFile] = File(...),
     session: Session = Depends(get_session),
+    clinician: Clinician = Depends(get_current_clinician),
 ):
     """Reading-passage task -- the only task that produces a risk_score (the ML model)."""
-    _require_patient(session, patient_id)
+    _require_patient(session, patient_id, clinician)
     paths = []
     try:
         for up in audio:
@@ -97,7 +108,7 @@ async def screen_reading(
         if not paths:
             raise HTTPException(status_code=400, detail="Empty audio upload.")
         result = voice_screen.screen(paths[0]) if len(paths) == 1 else voice_screen.screen_many(paths)
-        assessment = _persist(session, patient_id, performer, result)
+        assessment = _persist(session, patient_id, _performer_label(clinician), result)
     except HTTPException:
         raise
     except Exception as e:  # pragma: no cover
@@ -120,18 +131,18 @@ async def screen_reading(
 @router.post("/vowel", response_model=ScreenResultOut)
 async def screen_vowel(
     patient_id: uuid.UUID = Form(...),
-    performer: str | None = Form(None),
     audio: UploadFile = File(...),
     session: Session = Depends(get_session),
+    clinician: Clinician = Depends(get_current_clinician),
 ):
     """Sustained-vowel task -- measurement only, risk_score is always None."""
-    _require_patient(session, patient_id)
+    _require_patient(session, patient_id, clinician)
     p = await _to_temp(audio)
     if not p:
         raise HTTPException(status_code=400, detail="Empty audio upload.")
     try:
         result = voice_vowel.analyze_vowel(p)
-        assessment = _persist(session, patient_id, performer, result)
+        assessment = _persist(session, patient_id, _performer_label(clinician), result)
     except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=f"Vowel analysis failed: {e}")
     finally:
@@ -148,18 +159,18 @@ async def screen_vowel(
 @router.post("/ddk", response_model=ScreenResultOut)
 async def screen_ddk(
     patient_id: uuid.UUID = Form(...),
-    performer: str | None = Form(None),
     audio: UploadFile = File(...),
     session: Session = Depends(get_session),
+    clinician: Clinician = Depends(get_current_clinician),
 ):
     """Diadochokinetic (/pa-ta-ka/) task -- measurement only, risk_score is always None."""
-    _require_patient(session, patient_id)
+    _require_patient(session, patient_id, clinician)
     p = await _to_temp(audio)
     if not p:
         raise HTTPException(status_code=400, detail="Empty audio upload.")
     try:
         result = voice_ddk.analyze_ddk(p)
-        assessment = _persist(session, patient_id, performer, result)
+        assessment = _persist(session, patient_id, _performer_label(clinician), result)
     except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=f"DDK analysis failed: {e}")
     finally:

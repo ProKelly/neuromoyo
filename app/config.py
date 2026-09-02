@@ -37,12 +37,13 @@ class Settings(BaseSettings):
     # --- App ---
     environment: str = "production"
     cors_origins: str = "*"  # comma-separated list in prod, e.g. "https://app.neuromoyo.com"
+    resend_api_key: str = ""
     # Public URL of the FRONTEND (not this backend) -- used only to build the
     # redirect_to link in clinician invite emails (app/supabase_admin.py), so a
     # clicked invite lands on OUR set-password page instead of Supabase's bare
     # default. Must also be added to Supabase's Authentication -> URL
     # Configuration -> Redirect URLs allow-list, or Supabase silently ignores it.
-    frontend_url: str = "http://localhost:3000"
+    frontend_url: str = "https://neuromoyo.app"
     sample_rate: int = 16_000
     random_seed: int = 42
 

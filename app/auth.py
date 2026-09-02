@@ -128,7 +128,16 @@ def get_current_clinician(
 
 
 def require_admin(clinician: Clinician = Depends(get_current_clinician)) -> Clinician:
-    """Stricter dependency for admin-only routes (e.g. assigning facilities/roles)."""
+    """Stricter dependency for admin-only routes (e.g. registering a facility,
+    promoting roles)."""
     if clinician.role != "admin":
         raise HTTPException(status_code=403, detail="This action requires an admin role.")
+    return clinician
+
+
+def require_facility_admin(clinician: Clinician = Depends(get_current_clinician)) -> Clinician:
+    """For routes a facility_admin can also use (managing their own facility's
+    clinicians) -- global admin passes too, since admin is a superset."""
+    if clinician.role not in ("admin", "facility_admin"):
+        raise HTTPException(status_code=403, detail="This action requires an admin or facility_admin role.")
     return clinician

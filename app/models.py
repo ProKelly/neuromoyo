@@ -21,6 +21,26 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class Facility(SQLModel, table=True):
+    """A registered health facility -- gated creation only (see routers/facilities.py):
+    a global admin creates the row and invites its first `facility_admin`, who then
+    invites their own facility's clinicians. No self-serve signup, deliberately --
+    this is a pre-validation clinical tool, not an open SaaS product yet (see the
+    "What this actually does" framing in the README).
+
+    `Patient.facility` / `Clinician.facility` stay as denormalized display-name
+    strings (kept in sync with `Facility.name` at write time) rather than being
+    switched to `facility_id` everywhere -- that keeps every existing scoping check
+    and every frontend page that already reads `.facility` as a string working
+    unchanged. `facility_id` on Clinician is the source of truth for onboarding
+    (invites, the admin console); the string is what patient-scoping still compares.
+    """
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(unique=True, index=True)
+    created_at: datetime = Field(default_factory=_now)
+    created_by: uuid.UUID | None = Field(default=None, foreign_key="clinician.id")
+
+
 class Clinician(SQLModel, table=True):
     """A logged-in user of the console -- role/facility scoping lives here, not in
     the Supabase Auth token itself (the token only proves *who*, not *what they can
@@ -28,17 +48,25 @@ class Clinician(SQLModel, table=True):
     being auto-generated, so a verified token maps straight to a row with no extra
     lookup table.
 
-    Row is auto-created on first successful login (see app/auth.py) with
-    role="clinician" and no facility -- an admin assigns facility/role afterward via
-    `PATCH /api/clinicians/{id}`. A clinician with no facility sees no patients
-    (safe default) until assigned; this is deliberately restrictive for a first
-    pilot rather than defaulting new logins to "see everything".
+    Three-tier role: "admin" (global, sees/manages every facility, the only role
+    that can register a new Facility -- promoted by hand-editing this table, never
+    via the invite API, as a deliberate extra-friction safety measure for the most
+    powerful role) > "facility_admin" (scoped to one facility, can invite/manage
+    clinicians within it, patient-visibility otherwise identical to "clinician") >
+    "clinician" (screening only).
+
+    A row is normally created by `POST /api/clinicians/invite` at invite time, with
+    role/facility already set -- see routers/clinicians.py. The auto-create-on-
+    first-login fallback in app/auth.py (role="clinician", no facility, sees
+    nothing until assigned) only fires for a Supabase user that was never invited
+    through that flow, e.g. the very first bootstrap admin.
     """
     id: uuid.UUID = Field(primary_key=True)
     email: str = Field(index=True)
     full_name: str | None = None
-    role: str = Field(default="clinician")  # "clinician" | "admin"
-    facility: str | None = None  # must match Patient.facility text for scoping to apply
+    role: str = Field(default="clinician")  # "clinician" | "facility_admin" | "admin"
+    facility_id: uuid.UUID | None = Field(default=None, foreign_key="facility.id")
+    facility: str | None = None  # denormalized Facility.name; must match Patient.facility for scoping
     created_at: datetime = Field(default_factory=_now)
 
 

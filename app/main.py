@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 
 from .config import get_settings
 from .db import init_db
-from .routers import health, patients, assessments, clinicians
+from .routers import health, patients, assessments, clinicians, facilities
 
 settings = get_settings()
 
@@ -67,6 +67,7 @@ app.include_router(health.router)
 app.include_router(patients.router)
 app.include_router(assessments.router)
 app.include_router(clinicians.router)
+app.include_router(facilities.router)
 
 
 @app.exception_handler(Exception)

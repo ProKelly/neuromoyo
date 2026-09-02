@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str = ""        # "Legacy JWT Secret" (HS256) -- verifies clinician session tokens
 
     # --- App ---
-    environment: str = "development"
+    environment: str = "production"
     cors_origins: str = "*"  # comma-separated list in prod, e.g. "https://app.neuromoyo.com"
     # Public URL of the FRONTEND (not this backend) -- used only to build the
     # redirect_to link in clinician invite emails (app/supabase_admin.py), so a

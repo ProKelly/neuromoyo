@@ -92,8 +92,21 @@ export interface ClinicianMe {
   email: string
   full_name: string | null
   role: string
+  facility_id: string | null
   facility: string | null
   created_at: string
+}
+
+export interface Facility {
+  id: string
+  name: string
+  created_at: string
+}
+
+export interface InviteClinicianPayload {
+  email: string
+  facility_id: string
+  role: 'clinician' | 'facility_admin'
 }
 
 export interface TrendPoint {
@@ -162,8 +175,24 @@ export function useApi() {
     })
   }
 
-  async function listFacilities(): Promise<string[]> {
-    return await $fetch<string[]>(`${apiBase}/api/patients/facilities`, { headers: await authHeaders() })
+  async function listFacilities(): Promise<Facility[]> {
+    return await $fetch<Facility[]>(`${apiBase}/api/facilities`, { headers: await authHeaders() })
+  }
+
+  async function createFacility(name: string): Promise<Facility> {
+    return await $fetch<Facility>(`${apiBase}/api/facilities`, {
+      method: 'POST', body: { name }, headers: await authHeaders(),
+    })
+  }
+
+  async function listClinicians(): Promise<ClinicianMe[]> {
+    return await $fetch<ClinicianMe[]>(`${apiBase}/api/clinicians`, { headers: await authHeaders() })
+  }
+
+  async function inviteClinician(payload: InviteClinicianPayload): Promise<ClinicianMe> {
+    return await $fetch<ClinicianMe>(`${apiBase}/api/clinicians/invite`, {
+      method: 'POST', body: payload, headers: await authHeaders(),
+    })
   }
 
   async function listPatientAssessments(id: string): Promise<Assessment[]> {
@@ -205,5 +234,5 @@ export function useApi() {
     })
   }
 
-  return { createPatient, listPatients, getPatient, updatePatient, listFacilities, listPatientAssessments, getMe, getPatientReport, screenReading, screenVowel, screenDdk }
+  return { createPatient, listPatients, getPatient, updatePatient, listFacilities, createFacility, listClinicians, inviteClinician, listPatientAssessments, getMe, getPatientReport, screenReading, screenVowel, screenDdk }
 }

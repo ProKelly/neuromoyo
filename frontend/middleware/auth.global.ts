@@ -9,6 +9,14 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const isLoginPage = to.path === '/login'
   const isWelcomePage = to.path === '/welcome'
+  // Reachable regardless of auth state, and NOT force-redirected away even if
+  // `user` is already truthy -- clicking an invite link gives a temporary
+  // session (see accept-invite.vue's docblock), and that page needs to run
+  // regardless of whether session-from-URL detection has resolved by the time
+  // this middleware's own getSession() call does. The page itself shows an
+  // "invalid/expired" state if there's genuinely no session.
+  const isAcceptInvitePage = to.path === '/accept-invite'
+  if (isAcceptInvitePage) return
 
   // Signed-in clinicians skip the marketing/login pages and go straight to the console.
   if (user.value && (isLoginPage || isWelcomePage)) {

@@ -6,6 +6,12 @@
           <Logo size="sm" />
         </NuxtLink>
         <div v-if="user" class="flex items-center gap-3 sm:gap-4 text-sm">
+          <NuxtLink
+            v-if="me && me.role !== 'clinician'" to="/team"
+            class="text-ink-soft hover:text-teal-600 font-medium transition-colors whitespace-nowrap"
+          >
+            {{ t('nav.team') }}
+          </NuxtLink>
           <span class="text-ink-soft hidden sm:inline truncate max-w-[14rem]">{{ user.email }}</span>
           <button
             @click="onSignOut"
@@ -30,11 +36,19 @@
 </template>
 
 <script setup lang="ts">
+import type { ClinicianMe } from '~/composables/useApi'
+
 const { user, signOut } = useAuth()
 const { t, initLocale } = useI18n()
 const router = useRouter()
+const api = useApi()
 
 initLocale()
+
+const me = ref<ClinicianMe | null>(null)
+watch(user, async (u) => {
+  me.value = u ? await api.getMe().catch(() => null) : null
+}, { immediate: true })
 
 async function onSignOut() {
   await signOut()

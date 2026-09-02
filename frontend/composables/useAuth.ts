@@ -32,6 +32,16 @@ export function useAuth() {
     if (error) throw error
   }
 
+  async function setPassword(password: string) {
+    // Used by accept-invite.vue: at this point the person has a temporary
+    // session from clicking their invite link (Supabase parsed it from the URL
+    // automatically -- see plugins/supabase.client.ts's detectSessionInUrl).
+    // This turns that temporary session into a real account they can log back
+    // into later with email + this password.
+    const { error } = await $supabase.auth.updateUser({ password })
+    if (error) throw error
+  }
+
   async function signOut() {
     await $supabase.auth.signOut()
     user.value = null
@@ -42,5 +52,5 @@ export function useAuth() {
     return data.session?.access_token ?? null
   }
 
-  return { user, ready, init, signInWithPassword, signOut, getAccessToken }
+  return { user, ready, init, signInWithPassword, setPassword, signOut, getAccessToken }
 }

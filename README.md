@@ -54,14 +54,16 @@ neuromoyo/
 │   │   ├── db.py                SQLModel engine/session (lazy — boots without DB configured)
 │   │   ├── auth.py             verifies Supabase Auth tokens (ES256/JWKS or HS256 legacy),
 │   │   │                       auto-provisions/loads the matching Clinician
-│   │   ├── models.py           Clinician / Patient / Assessment / Observation
+│   │   ├── supabase_admin.py   calls Supabase Auth's Admin API to send clinician invite emails
+│   │   ├── models.py           Facility / Clinician / Patient / Assessment / Observation
 │   │   ├── schemas.py          Pydantic request/response shapes, incl. PatientReport
 │   │   ├── reporting.py        builds the cross-task report: trend detection,
 │   │   │                       rule-based recommendation tier, supporting findings
 │   │   ├── routers/
 │   │   │   ├── patients.py     patient CRUD, facility auto-assignment, report endpoint
 │   │   │   ├── assessments.py  voice screening endpoints (reading/vowel/ddk), persists results
-│   │   │   └── clinicians.py   /me + admin-only facility/role assignment
+│   │   │   ├── clinicians.py   /me, admin-only role assignment, and the invite flow
+│   │   │   └── facilities.py   admin-only facility registration; anyone can list
 │   │   └── modalities/
 │   │       ├── base.py         the AssessmentModality contract every modality implements
 │   │       └── voice/          screen/vowel/ddk/egemaps/explain + audio_io.py (ffmpeg fallback
@@ -75,6 +77,7 @@ neuromoyo/
 │   │   ├── welcome.vue                   public landing page (signed-out default)
 │   │   ├── login.vue                     Supabase Auth email/password sign-in
 │   │   ├── index.vue                     dashboard: roster, search/filter, stats, mini-trends
+│   │   ├── team.vue                      admin/facility_admin: register facilities, invite clinicians
 │   │   ├── patients/new.vue              patient intake (facility auto-assigned, not typed)
 │   │   └── assess/[patientId]/
 │   │       ├── ../[patientId].vue        parent layout: header + section nav + <NuxtPage/>
@@ -169,6 +172,57 @@ offers **"Download as PDF"**, which is just `window.print()` with print CSS
 page's own buttons) — no PDF library, so the PDF is pixel-identical to what's
 on screen and never drifts out of sync with the web view.
 
+## Onboarding: facilities and clinicians in production
+
+This is the part a health-facility admin would actually touch — deliberately
+**gated, not self-serve** (see `Facility`'s docstring in `app/models.py`): this
+is a pre-validation clinical tool handling patient data, so facility creation
+stays with a trusted global admin rather than open signup, at least until
+there's a real vetting process and clinical validation behind it.
+
+Three roles, each a strict superset of the next:
+
+| Role | Scope | Can do |
+|---|---|---|
+| `admin` (global) | Every facility | Register facilities, invite a facility's first `facility_admin`, promote/reassign anyone (via direct `PATCH`) |
+| `facility_admin` | One facility | Invite/manage `clinician`s at their own facility; patient visibility identical to `clinician` |
+| `clinician` | One facility | Screen patients, view/edit them, generate reports — no admin actions |
+
+**The flow**: an `admin` registers a facility (`POST /api/facilities`, also
+reachable from the console's **Team** page) and invites that facility's first
+`facility_admin` by email. The invite (`POST /api/clinicians/invite`) calls
+Supabase Auth's Admin API directly (`app/supabase_admin.py`, needs
+`SUPABASE_SERVICE_ROLE_KEY`) to create the account and send a set-password
+email — and, crucially, creates the `Clinician` row **immediately**, already
+scoped to the right facility and role. There's no "logs in, sees nothing,
+waits for a manual promotion" gap for anyone who arrives through an invite —
+that gap only still exists for the very first bootstrap admin (see below),
+because nobody could have invited them yet.
+
+From there, that `facility_admin` signs in, opens **Team**, and invites their
+own facility's clinicians the same way — scoped to `role="clinician"` and
+their own facility only; a facility_admin cannot invite another admin of any
+kind, and cannot invite outside their own facility (enforced server-side in
+`routers/clinicians.py`, not just hidden in the UI).
+
+**Bootstrapping the very first admin** (before any facility or invite exists):
+sign in once with any Supabase-created account — this auto-provisions a
+`Clinician` row with `role="clinician"` and no facility (sees/creates nothing,
+safe default), then promote yourself by hand in the Supabase table editor
+(`clinician.role = 'admin'`). This manual step is deliberate, not a
+missing feature: promoting someone to global admin is the one action with no
+"undo" story if it goes to the wrong person, so it gets one extra layer of
+friction that invites don't have.
+
+**Facility assignment is never free-typed on a patient** — it's assigned
+server-side from the clinician's own `facility` at patient-creation time, so
+there's no string for a typo to corrupt into an invisible patient. An admin,
+not tied to one facility, still specifies one explicitly when creating a
+patient, but from a picker fed by `GET /api/facilities`, not a blank text
+field. Reassigning an *existing* patient's facility is admin-only for the same
+reason a clinician can't self-assign one: editing that field would be a way to
+move a patient into or out of your own visibility.
+
 ## Setup
 
 ### 1. Supabase
@@ -176,11 +230,13 @@ on screen and never drifts out of sync with the web view.
 Create a Supabase project. You'll need:
 
 - **Database → Connection string → URI** (Session pooler recommended) — `DATABASE_URL`
-- **Authentication → Sign-in methods**: enable Email, and create clinician accounts
-  under **Authentication → Users → Add user** (no public self-signup — accounts
-  are provisioned by an admin)
-- **Project Settings → API → Project URL and `anon public` key** — `SUPABASE_URL`
-  (both backend and frontend need this) and the frontend's `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+- **Authentication → Sign-in methods**: enable Email (clinician accounts are
+  created via the invite flow above, or manually under **Authentication →
+  Users → Add user** for the very first bootstrap admin)
+- **Project Settings → API → Project URL, `anon public` key, and `service_role`
+  key** — `SUPABASE_URL` (backend + frontend), `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+  (frontend), `SUPABASE_SERVICE_ROLE_KEY` (backend-only, powers the invite flow
+  — never expose this one to the frontend)
 
 That's it for most projects. Backend token verification (`app/auth.py`) checks
 the token's own header to decide how to verify it:
@@ -197,24 +253,6 @@ the token's own header to decide how to verify it:
   signing method doesn't match what got configured — almost always `SUPABASE_URL`
   is missing/wrong (JWKS verification never got attempted), not that an HS256
   secret is wrong.
-
-The very first person who logs in is auto-provisioned as `role="clinician"`
-with **no facility**, which means they can see and create zero patients (safe
-default — see `_assert_can_access` and `create_patient` in `routers/patients.py`,
-both apply the same rule so a newly-provisioned account can't silently create a
-patient it then can't see). Promote yourself to admin once, directly in the
-Supabase table editor (`clinician.role = 'admin'`) — from there, assign
-facilities/roles to everyone else via `PATCH /api/clinicians/{id}`.
-
-**Facility assignment is never free-typed by a regular clinician** — it's
-assigned server-side from their own `Clinician.facility` at patient-creation
-time, so there's no string for a typo to corrupt into an invisible patient. An
-admin, not being tied to one facility, still specifies one explicitly, but from
-a picker (`GET /api/patients/facilities`) fed by facilities already in use, not
-a blank text field. Reassigning an *existing* patient's facility
-(`PATCH .../facility`) is admin-only for the same reason: a clinician editing
-that field on their own patient would be a way to move it into or out of their
-own visibility.
 
 ### 2. Backend
 
@@ -256,13 +294,15 @@ Every route below (except `/api/health`) requires `Authorization: Bearer
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/clinicians/me` | Who am I, what facility/role am I scoped to (auto-provisions on first login) |
-| `GET /api/clinicians` | Admin-only: list all clinicians |
-| `PATCH /api/clinicians/{id}` | Admin-only: assign a clinician's facility/role |
+| `GET /api/clinicians` | Admin: every clinician. Facility_admin: their own facility's roster only |
+| `POST /api/clinicians/invite` | Admin or facility_admin: invite a new clinician by email — see "Onboarding" above |
+| `PATCH /api/clinicians/{id}` | Admin-only: directly assign a clinician's facility/role (bootstrapping; prefer `invite` otherwise) |
+| `GET /api/facilities` | Any clinician: list registered facilities (metadata only) |
+| `POST /api/facilities` | Admin-only: register a new facility |
 | `POST /api/patients` | Create a patient — `facility` assigned server-side from the clinician's own record; an admin must specify one explicitly |
 | `GET /api/patients` | List patients — facility-scoped for a clinician, all for an admin |
 | `GET /api/patients/{id}` | Fetch a patient (404 if outside your facility) |
 | `PATCH /api/patients/{id}` | Edit a patient's own details (any field except `facility`, admin-only) |
-| `GET /api/patients/facilities` | Distinct facility names in use — feeds the admin intake form's picker |
 | `GET /api/patients/{id}/assessments` | Longitudinal assessment history — feeds History & Trends |
 | `GET /api/patients/{id}/report` | Synthesized cross-task report — see "The cross-task report" above |
 | `POST /api/assessments/voice/reading` | Reading-passage screening (produces a risk score) |
@@ -288,6 +328,8 @@ immediately after scoring, never stored.
   the dashboard currently fetches each patient's history in parallel
   client-side, fine at pilot-clinic scale but worth revisiting past a few
   hundred patients
+- Self-serve facility registration — deliberately gated for now (see
+  "Onboarding" above); revisit once there's a real vetting process
 - The clinical correlation study that would move this from "a well-engineered
   screening instrument" to "a validated one" — see the framing note at the top
   of this README

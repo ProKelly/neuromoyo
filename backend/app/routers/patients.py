@@ -25,21 +25,6 @@ def _assert_can_access(patient: Patient, clinician: Clinician) -> None:
         raise HTTPException(status_code=404, detail="Patient not found")
 
 
-@router.get("/facilities", response_model=list[str])
-def list_facilities(
-    session: Session = Depends(get_session),
-    clinician: Clinician = Depends(get_current_clinician),
-):
-    """Distinct facility names already in use, sourced from registered clinicians
-    (the authoritative list -- a facility "exists" once at least one clinician is
-    scoped to it). Used by the admin intake form as suggestions, so an admin
-    creating a patient at an existing facility picks from a list instead of
-    retyping a name that has to match byte-for-byte -- the same typo risk this
-    whole auto-assignment feature exists to remove for everyone else."""
-    stmt = select(Clinician.facility).where(Clinician.facility.is_not(None)).distinct()
-    return sorted({f for f in session.exec(stmt).all() if f})
-
-
 @router.post("", response_model=PatientRead)
 def create_patient(
     payload: PatientCreate,
@@ -49,9 +34,9 @@ def create_patient(
     data = payload.model_dump()
     if clinician.role == "admin":
         # Admins aren't tied to one facility, so they must specify which one --
-        # but see GET /facilities: the frontend offers this as a pick-list of
-        # already-known facilities rather than a free-typed field, so the typo
-        # risk is minimized even here.
+        # but see GET /api/facilities: the frontend offers this as a pick-list
+        # of already-registered facilities rather than a free-typed field, so
+        # the typo risk is minimized even here.
         if not data.get("facility"):
             raise HTTPException(status_code=422, detail="As an admin, you must specify which facility this patient belongs to.")
     else:

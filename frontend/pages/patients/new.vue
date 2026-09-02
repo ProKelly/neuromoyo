@@ -63,7 +63,7 @@
           class="rounded-lg border border-mist px-3.5 py-2.5 text-ink placeholder:text-ink-soft/50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
         />
         <datalist id="facility-options">
-          <option v-for="f in facilities" :key="f" :value="f" />
+          <option v-for="f in facilities" :key="f.id" :value="f.name" />
         </datalist>
       </div>
       <p v-else-if="me" class="text-sm text-ink-soft">
@@ -87,14 +87,14 @@
 </template>
 
 <script setup lang="ts">
-import type { ClinicianMe, PatientCreate } from '~/composables/useApi'
+import type { ClinicianMe, Facility, PatientCreate } from '~/composables/useApi'
 
 const api = useApi()
 const router = useRouter()
 const { t } = useI18n()
 
 const me = ref<ClinicianMe | null>(null)
-const facilities = ref<string[]>([])
+const facilities = ref<Facility[]>([])
 const isAdmin = computed(() => me.value?.role === 'admin')
 
 const form = reactive<PatientCreate>({

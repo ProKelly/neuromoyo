@@ -11,6 +11,7 @@ class ClinicianRead(BaseModel):
     email: str
     full_name: str | None
     role: str
+    facility_id: uuid.UUID | None = None
     facility: str | None
     created_at: datetime
 
@@ -18,8 +19,24 @@ class ClinicianRead(BaseModel):
 class ClinicianUpdate(BaseModel):
     """Admin-only: assign a clinician's facility and/or promote their role."""
     full_name: str | None = None
-    role: str | None = None  # "clinician" | "admin"
+    role: str | None = None  # "clinician" | "facility_admin" | "admin"
     facility: str | None = None
+
+
+class FacilityCreate(BaseModel):
+    name: str
+
+
+class FacilityRead(BaseModel):
+    id: uuid.UUID
+    name: str
+    created_at: datetime
+
+
+class InviteClinicianPayload(BaseModel):
+    email: str
+    facility_id: uuid.UUID
+    role: str = "clinician"  # "clinician" | "facility_admin" -- global "admin" is never invitable
 
 
 class PatientCreate(BaseModel):

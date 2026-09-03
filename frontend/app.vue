@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col">
+    <BackgroundPattern />
     <header class="border-b border-mist bg-white sticky top-0 z-10 print:hidden">
       <div class="max-w-3xl mx-auto px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3">
         <NuxtLink to="/" class="shrink-0">
@@ -23,11 +24,11 @@
       </div>
     </header>
     <main class="flex-1">
-      <div class="max-w-3xl mx-auto px-4 sm:px-5 py-6 sm:py-8 w-full">
+      <div :class="isFullWidth ? 'w-full' : 'max-w-3xl mx-auto px-4 sm:px-5 py-6 sm:py-8 w-full'">
         <NuxtPage />
       </div>
     </main>
-    <footer class="border-t border-mist py-4 print:hidden">
+    <footer class="border-t border-mist py-4 print:hidden bg-paper/80 backdrop-blur-sm">
       <p class="max-w-3xl mx-auto px-4 sm:px-5 text-xs text-ink-soft">
         {{ t('footer.disclaimer') }}
       </p>
@@ -41,9 +42,15 @@ import type { ClinicianMe } from '~/composables/useApi'
 const { user, signOut } = useAuth()
 const { t, initLocale } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const api = useApi()
 
 initLocale()
+
+// The public landing page manages its own full-bleed section widths (each
+// section picks its own inner max-width); every console page stays inside the
+// standard max-w-3xl column.
+const isFullWidth = computed(() => route.path === '/welcome')
 
 const me = ref<ClinicianMe | null>(null)
 watch(user, async (u) => {

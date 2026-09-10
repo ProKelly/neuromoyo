@@ -16,7 +16,8 @@
     <div class="flex items-center gap-3">
       <button
         v-if="!recording && !audioUrl"
-        class="inline-flex items-center gap-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors cursor-pointer"
+        class="inline-flex items-center gap-2 rounded-full bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-teal-700 text-white px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors cursor-pointer"
+        :disabled="props.disabled"
         @click="start"
       >
         <span class="w-2 h-2 rounded-full bg-white"></span>
@@ -48,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+const props = defineProps<{ disabled?: boolean }>()
 const emit = defineEmits<{ recorded: [blob: Blob] }>()
 
 const recording = ref(false)
@@ -65,6 +67,7 @@ let analyser: AnalyserNode | null = null
 let rafId: number | null = null
 
 async function start() {
+  if (props.disabled) return
   error.value = null
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true })

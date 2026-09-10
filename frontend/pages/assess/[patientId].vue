@@ -70,6 +70,7 @@ onMounted(async () => {
 const navItems = [
   { to: `/assess/${patientId}`, labelKey: 'assess.nav.overview' },
   { to: `/assess/${patientId}/record`, labelKey: 'assess.nav.record' },
+  ...(useRuntimeConfig().public.voiceIntelligenceEnabled ? [{ to: `/assess/${patientId}/voice-intelligence`, labelKey: 'assess.nav.voiceIntelligence' }] : []),
   { to: `/assess/${patientId}/history`, labelKey: 'assess.nav.history' },
   { to: `/assess/${patientId}/report`, labelKey: 'assess.nav.report' },
   { to: `/assess/${patientId}/details`, labelKey: 'assess.nav.details' },

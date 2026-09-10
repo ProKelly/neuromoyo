@@ -66,6 +66,46 @@ export interface ScreenResult {
   disclaimer?: string | null
 }
 
+export interface ClinicalFinding {
+  category: string
+  concept: string
+  value: string | null
+  status: string
+  confidence: number
+  evidence: string | null
+  source: string
+}
+
+export interface NeurologicalSignal {
+  risk_score: number | null
+  risk_band: string | null
+  confidence: number | null
+  quality_score: number | null
+  biomarkers: Biomarker[]
+  model_name: string | null
+  model_version: string | null
+}
+
+export interface VoiceIntelligenceResult {
+  ok: boolean
+  error?: string | null
+  session_id?: string | null
+  assessment_id?: string | null
+  transcript?: string | null
+  language?: string | null
+  asr_provider?: string | null
+  asr_model?: string | null
+  asr_latency_ms?: number | null
+  audio_duration_s?: number | null
+  audio_quality_score?: number | null
+  consent_confirmed?: boolean
+  clinical_findings: ClinicalFinding[]
+  neurological_signal?: NeurologicalSignal | null
+  clinician_summary?: string | null
+  safety_notes: string[]
+  created_at?: string | null
+}
+
 export interface Assessment {
   id: string
   patient_id: string
@@ -207,6 +247,17 @@ export function useApi() {
     return await $fetch<PatientReport>(`${apiBase}/api/patients/${id}/report`, { headers: await authHeaders() })
   }
 
+  async function analyseVoiceIntelligence(patientId: string, blob: Blob, language = 'en', consentConfirmed = false): Promise<VoiceIntelligenceResult> {
+    const form = new FormData()
+    form.append('patient_id', patientId)
+    form.append('language', language)
+    form.append('consent_confirmed', String(consentConfirmed))
+    form.append('audio', blob, 'voice-intelligence.webm')
+    return await $fetch<VoiceIntelligenceResult>(`${apiBase}/api/voice-intelligence/analyse`, {
+      method: 'POST', body: form, headers: await authHeaders(),
+    })
+  }
+
   async function screenReading(patientId: string, blob: Blob): Promise<ScreenResult> {
     const form = new FormData()
     form.append('patient_id', patientId)
@@ -234,5 +285,5 @@ export function useApi() {
     })
   }
 
-  return { createPatient, listPatients, getPatient, updatePatient, listFacilities, createFacility, listClinicians, inviteClinician, listPatientAssessments, getMe, getPatientReport, screenReading, screenVowel, screenDdk }
+  return { createPatient, listPatients, getPatient, updatePatient, listFacilities, createFacility, listClinicians, inviteClinician, listPatientAssessments, getMe, getPatientReport, analyseVoiceIntelligence, screenReading, screenVowel, screenDdk }
 }

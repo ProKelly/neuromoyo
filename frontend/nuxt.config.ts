@@ -19,6 +19,7 @@ export default defineNuxtConfig({
       // Points at the FastAPI backend. Override with NUXT_PUBLIC_API_BASE in
       // production (e.g. your Render/Fly/Railway URL); defaults to local dev.
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://127.0.0.1:8000',
+      voiceIntelligenceEnabled: process.env.NUXT_PUBLIC_VOICE_INTELLIGENCE_ENABLED === 'true',
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || '',
     },

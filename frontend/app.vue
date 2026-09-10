@@ -50,7 +50,7 @@ initLocale()
 // The public landing page manages its own full-bleed section widths (each
 // section picks its own inner max-width); every console page stays inside the
 // standard max-w-3xl column.
-const isFullWidth = computed(() => route.path === '/welcome')
+const isFullWidth = computed(() => route.path === '/welcome' || route.path === '/benchmark')
 
 const me = ref<ClinicianMe | null>(null)
 watch(user, async (u) => {

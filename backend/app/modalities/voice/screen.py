@@ -26,8 +26,8 @@ from .explain import explain_vector
 settings = get_settings()
 
 DISCLAIMER = (
-    "Neuromoyo NeuroVoice is a research prototype and screening aid, NOT a medical "
-    "device or diagnosis. A result here cannot confirm or rule out Parkinson's "
+    "Neuromoyo NeuroVoice is an AI-assisted screening aid, not a diagnostic system or "
+    "substitute for clinical examination. A result here cannot confirm or rule out Parkinson's "
     "disease. If you have concerns about your health, please consult a qualified "
     "neurologist."
 )

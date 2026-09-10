@@ -29,12 +29,17 @@
       </p>
 
       <div class="rise flex flex-col items-center gap-4" style="animation-delay: 0.3s">
-        <NuxtLink
-          to="/login"
-          class="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-semibold px-9 py-3.5 text-base transition-colors shadow-sm shadow-teal-900/10"
-        >
-          {{ t('welcome.cta') }}
-        </NuxtLink>
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <NuxtLink
+            to="/login"
+            class="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-semibold px-9 py-3.5 text-base transition-colors shadow-sm shadow-teal-900/10"
+          >
+            {{ t('welcome.cta') }}
+          </NuxtLink>
+          <NuxtLink to="/benchmark" class="rounded-full border border-mist bg-white text-ink-soft hover:text-teal-600 font-semibold px-7 py-3.5 text-sm transition-colors">
+            View benchmark evidence
+          </NuxtLink>
+        </div>
         <a href="#science" class="text-sm font-medium text-ink-soft hover:text-teal-600 transition-colors">
           {{ t('welcome.secondaryCta') }} ↓
         </a>

@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ClinicianRead(BaseModel):
@@ -121,6 +121,53 @@ class ScreenResultOut(BaseModel):
     narrative: str | None = None
     biomarkers: list[BiomarkerRead] = []
     disclaimer: str | None = None
+
+
+class ClinicalFindingRead(BaseModel):
+    id: uuid.UUID
+    category: str
+    concept: str
+    value: str | None
+    status: str
+    confidence: float
+    evidence: str | None
+    source: str
+
+
+class VoiceIntelligenceOut(BaseModel):
+    ok: bool
+    error: str | None = None
+    session_id: uuid.UUID | None = None
+    assessment_id: uuid.UUID | None = None
+    transcript: str | None = None
+    language: str | None = None
+    asr_provider: str | None = None
+    asr_model: str | None = None
+    asr_latency_ms: float | None = None
+    audio_duration_s: float | None = None
+    audio_quality_score: float | None = None
+    consent_confirmed: bool = False
+    clinical_findings: list[ClinicalFindingRead] = Field(default_factory=list)
+    neurological_signal: dict | None = None
+    clinician_summary: str | None = None
+    safety_notes: list[str] = Field(default_factory=list)
+    created_at: datetime | None = None
+
+
+class VoiceIntelligenceRead(BaseModel):
+    id: uuid.UUID
+    patient_id: uuid.UUID
+    assessment_id: uuid.UUID | None
+    language: str | None
+    asr_provider: str
+    asr_model: str
+    transcript: str
+    asr_latency_ms: float | None
+    audio_duration_s: float | None
+    audio_quality_score: float | None
+    consent_confirmed: bool
+    findings: list[ClinicalFindingRead] = Field(default_factory=list)
+    created_at: datetime
 
 
 class TrendPoint(BaseModel):

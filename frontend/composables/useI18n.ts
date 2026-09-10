@@ -102,6 +102,7 @@ const dict: Record<Locale, Record<string, string>> = {
     'assess.backToDashboard': 'Back to patients',
 
     'assess.nav.overview': 'Overview',
+    'assess.nav.voiceIntelligence': 'Voice Intelligence',
     'assess.nav.record': 'Record assessment',
     'assess.nav.history': 'History & trends',
     'assess.nav.details': 'Patient details',
@@ -254,6 +255,7 @@ const dict: Record<Locale, Record<string, string>> = {
     'assess.backToDashboard': 'Retour aux patients',
 
     'assess.nav.overview': 'Aperçu',
+    'assess.nav.voiceIntelligence': 'Voice Intelligence',
     'assess.nav.record': 'Enregistrer une évaluation',
     'assess.nav.history': 'Historique et tendances',
     'assess.nav.details': 'Détails du patient',

@@ -1,0 +1,120 @@
+{
+  "dataset": {
+    "name": "Intron Health AfriSwitch",
+    "configuration": "pidgin",
+    "split": "test",
+    "full_n": 1801,
+    "evaluation_n": 100,
+    "seed": 20260909,
+    "composition": {
+      "code_switched": 1799,
+      "non_code_switched": 2
+    }
+  },
+  "models": [
+    {
+      "model": "Sahara",
+      "n": 100,
+      "mean_WER": 0.52622,
+      "median_WER": 0.5,
+      "mean_CER": 0.337606,
+      "median_CER": 0.280969,
+      "mean_latency_s": 2.48823,
+      "mean_RTF": 0.349679
+    },
+    {
+      "model": "MMS-1B",
+      "n": 100,
+      "mean_WER": 0.655644,
+      "median_WER": 0.617647,
+      "mean_CER": 0.365325,
+      "median_CER": 0.308426,
+      "mean_latency_s": 0.407694,
+      "mean_RTF": 0.0470506
+    },
+    {
+      "model": "Whisper Tiny",
+      "n": 100,
+      "mean_WER": 2.43599,
+      "median_WER": 0.870192,
+      "mean_CER": 2.08329,
+      "median_CER": 0.576795,
+      "mean_latency_s": 1.26068,
+      "mean_RTF": 0.16135
+    },
+    {
+      "model": "Whisper Base",
+      "n": 100,
+      "mean_WER": 2.84114,
+      "median_WER": 0.809091,
+      "mean_CER": 1.92592,
+      "median_CER": 0.461636,
+      "mean_latency_s": 1.73561,
+      "mean_RTF": 0.183715
+    }
+  ],
+  "paired": [
+    {
+      "comparison": "Sahara \u2212 Whisper Tiny",
+      "difference": -1.90977,
+      "low": -2.84251,
+      "high": -1.11459
+    },
+    {
+      "comparison": "Sahara \u2212 Whisper Base",
+      "difference": -2.31492,
+      "low": -3.28402,
+      "high": -1.48954
+    },
+    {
+      "comparison": "Sahara \u2212 MMS-1B",
+      "difference": -0.129424,
+      "low": -0.169516,
+      "high": -0.0905367
+    }
+  ],
+  "cmi": [
+    {
+      "model": "Sahara",
+      "low": 0.520404,
+      "high": 0.532036
+    },
+    {
+      "model": "MMS-1B",
+      "low": 0.623452,
+      "high": 0.687836
+    },
+    {
+      "model": "Whisper Tiny",
+      "low": 3.10772,
+      "high": 1.76425
+    },
+    {
+      "model": "Whisper Base",
+      "low": 2.33611,
+      "high": 3.34617
+    }
+  ],
+  "switch": [
+    {
+      "model": "Sahara",
+      "low": 0.499245,
+      "high": 0.554296
+    },
+    {
+      "model": "MMS-1B",
+      "low": 0.666923,
+      "high": 0.643904
+    },
+    {
+      "model": "Whisper Tiny",
+      "low": 2.11772,
+      "high": 2.76724
+    },
+    {
+      "model": "Whisper Base",
+      "low": 2.88119,
+      "high": 2.79945
+    }
+  ]
+}

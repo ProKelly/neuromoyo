@@ -135,3 +135,40 @@ class Observation(SQLModel, table=True):
     shap_contribution: float | None = None  # signed contribution to risk_score, if available
 
     assessment: Assessment = Relationship(back_populates="observations")
+
+
+class VoiceIntelligenceSession(SQLModel, table=True):
+    """Auditable downstream voice-AI session. Raw audio is never stored.
+
+    This table is intentionally separate from Assessment so the challenge layer
+    can be removed without changing the existing Parkinson's assessment schema.
+    """
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    patient_id: uuid.UUID = Field(foreign_key="patient.id", index=True)
+    assessment_id: uuid.UUID | None = Field(default=None, foreign_key="assessment.id", index=True)
+    language: str | None = None
+    asr_provider: str
+    asr_model: str
+    transcript: str
+    asr_latency_ms: float | None = None
+    audio_duration_s: float | None = None
+    audio_quality_score: float | None = None
+    consent_confirmed: bool = False
+    created_at: datetime = Field(default_factory=_now)
+
+    findings: List["ClinicalFinding"] = Relationship(back_populates="session")
+
+
+class ClinicalFinding(SQLModel, table=True):
+    """One traceable clinical-information extraction from patient speech."""
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    session_id: uuid.UUID = Field(foreign_key="voiceintelligencesession.id", index=True)
+    category: str = Field(index=True)
+    concept: str = Field(index=True)
+    value: str | None = None
+    status: str
+    confidence: float
+    evidence: str | None = None
+    source: str = "patient_speech"
+
+    session: VoiceIntelligenceSession = Relationship(back_populates="findings")

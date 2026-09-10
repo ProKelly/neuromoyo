@@ -8,6 +8,8 @@ deleted; only derived biomarkers/scores are persisted (see routers/assessments.p
 from __future__ import annotations
 
 import gc
+import logging
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -16,19 +18,26 @@ from fastapi.responses import JSONResponse
 
 from .config import get_settings
 from .db import init_db
-from .routers import health, patients, assessments, clinicians, facilities
+from .routers import health, patients, assessments, clinicians, facilities, voice_intelligence
 
 settings = get_settings()
+logger = logging.getLogger("neuromoyo")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables if they don't exist yet (MVP; move to Alembic once schema stabilizes).
-    if settings.database_url:
+    # Production schema changes should be explicit migrations. AUTO_CREATE_DB is
+    # retained for local development and fresh disposable environments.
+    if settings.database_url and settings.auto_create_db:
         init_db()
+    elif settings.database_url and not settings.auto_create_db:
+        logger.info("Database auto-creation disabled; expecting applied migrations.")
     else:
         print("WARNING: DATABASE_URL is not set -- patient/assessment routes will fail. "
               "Add your Supabase connection string to backend/.env")
+
+    if settings.environment.lower() == "production" and "*" in settings.cors_origin_list:
+        raise RuntimeError("CORS_ORIGINS must list exact frontend origins in production; wildcard CORS is disabled.")
 
     if not settings.supabase_jwt_secret and not settings.supabase_url:
         print("WARNING: Neither SUPABASE_URL nor SUPABASE_JWT_SECRET is set -- every "
@@ -68,6 +77,7 @@ app.include_router(patients.router)
 app.include_router(assessments.router)
 app.include_router(clinicians.router)
 app.include_router(facilities.router)
+app.include_router(voice_intelligence.router)
 
 
 @app.exception_handler(Exception)
@@ -77,9 +87,13 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     and returned as JSON `{"detail": ...}` instead of a bare, bodyless 500 --
     so the frontend's error surfacing (see useApi.ts / assess page) actually
     has something to show, and the server log has something to grep for."""
-    import traceback
-    traceback.print_exc()
-    return JSONResponse(status_code=500, content={"detail": f"{type(exc).__name__}: {exc}"})
+    request_id = str(uuid.uuid4())
+    logger.exception("Unhandled request error", extra={"request_id": request_id, "path": request.url.path})
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected server error occurred.", "request_id": request_id},
+        headers={"X-Request-ID": request_id},
+    )
 
 
 if __name__ == "__main__":

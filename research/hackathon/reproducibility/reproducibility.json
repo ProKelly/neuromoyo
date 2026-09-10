@@ -1,0 +1,24 @@
+{
+  "dataset": "intronhealth/AfriSwitch",
+  "config": "pidgin",
+  "split": "test",
+  "full_rows": 1801,
+  "evaluation_rows": 100,
+  "random_seed": 20260909,
+  "models": [
+    "Sahara",
+    "Whisper Tiny",
+    "Whisper Base",
+    "MMS-1B"
+  ],
+  "metrics": [
+    "WER",
+    "CER",
+    "latency",
+    "RTF",
+    "code-switch penalty",
+    "CMI/switch-point analysis",
+    "paired bootstrap CI",
+    "Clinical Information Preservation template"
+  ]
+}

@@ -15,8 +15,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // regardless of whether session-from-URL detection has resolved by the time
   // this middleware's own getSession() call does. The page itself shows an
   // "invalid/expired" state if there's genuinely no session.
+  const isBenchmarkPage = to.path === '/benchmark'
   const isAcceptInvitePage = to.path === '/accept-invite'
-  if (isAcceptInvitePage) return
+  if (isAcceptInvitePage || isBenchmarkPage) return
 
   // Signed-in clinicians skip the marketing/login pages and go straight to the console.
   if (user.value && (isLoginPage || isWelcomePage)) {

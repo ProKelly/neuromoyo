@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     # --- App ---
     environment: str = "production"
-    cors_origins: str = "http://localhost:3000"  # comma-separated; set the exact production frontend origin(s)
+    cors_origins: str = "*"  # comma-separated; set the exact production frontend origin(s)
     resend_api_key: str = ""
     # Public URL of the FRONTEND (not this backend) -- used only to build the
     # redirect_to link in clinician invite emails (app/supabase_admin.py), so a
@@ -46,11 +46,7 @@ class Settings(BaseSettings):
     frontend_url: str = "https://neuromoyo.app"
     sample_rate: int = 16_000
     random_seed: int = 42
-    auto_create_db: bool = False
-
-    # --- Voice Intelligence (challenge layer, independently removable) ---
-    voice_intelligence_enabled: bool = True
-    sahara_api_url: str = "https://infer.voice.intron.io"
+    auto_create_db: bool = True
     sahara_api_key: str = ""
     sahara_timeout_seconds: float = 60.0
     sahara_language: str = "en"

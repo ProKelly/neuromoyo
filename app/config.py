@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     sahara_api_key: str = ""
     sahara_timeout_seconds: float = 60.0
     sahara_language: str = "en"
+    sahara_api_url: str = "https://infer.voice.intron.io"
     voice_intelligence_enabled: bool = True
 
     @property

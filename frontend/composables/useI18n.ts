@@ -11,6 +11,10 @@ export type Locale = 'en' | 'fr'
 
 const dict: Record<Locale, Record<string, string>> = {
   en: {
+    'nav.welcome': 'Welcome',
+    'nav.benchmark': 'Benchmark',
+    'nav.about': 'About',
+    'nav.signIn': 'Sign in',
     'nav.dashboard': 'Dashboard',
     'nav.newPatient': 'New patient',
     'nav.signOut': 'Sign out',
@@ -164,6 +168,10 @@ const dict: Record<Locale, Record<string, string>> = {
     'team.noClinicians': 'No clinicians yet.',
   },
   fr: {
+    'nav.welcome': 'Accueil',
+    'nav.benchmark': 'Benchmark',
+    'nav.about': 'À propos',
+    'nav.signIn': 'Connexion',
     'nav.dashboard': 'Tableau de bord',
     'nav.newPatient': 'Nouveau patient',
     'nav.signOut': 'Déconnexion',

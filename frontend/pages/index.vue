@@ -24,18 +24,18 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-3 mb-6">
-      <div class="bg-white border border-mist rounded-xl p-4">
-        <p class="text-2xl font-display font-medium text-ink">{{ patients.length }}</p>
-        <p class="text-xs text-ink-soft mt-0.5">{{ t('dashboard.stat.total') }}</p>
+    <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
+      <div class="bg-white border border-mist rounded-xl p-3 sm:p-4">
+        <p class="text-xl sm:text-2xl font-display font-medium text-ink">{{ patients.length }}</p>
+        <p class="text-[11px] sm:text-xs text-ink-soft mt-0.5">{{ t('dashboard.stat.total') }}</p>
       </div>
-      <div class="bg-white border border-mist rounded-xl p-4">
-        <p class="text-2xl font-display font-medium" :class="flaggedCount > 0 ? 'text-rust-600' : 'text-ink'">{{ flaggedCount }}</p>
-        <p class="text-xs text-ink-soft mt-0.5">{{ t('dashboard.stat.flagged') }}</p>
+      <div class="bg-white border border-mist rounded-xl p-3 sm:p-4">
+        <p class="text-xl sm:text-2xl font-display font-medium" :class="flaggedCount > 0 ? 'text-rust-600' : 'text-ink'">{{ flaggedCount }}</p>
+        <p class="text-[11px] sm:text-xs text-ink-soft mt-0.5">{{ t('dashboard.stat.flagged') }}</p>
       </div>
-      <div class="bg-white border border-mist rounded-xl p-4">
-        <p class="text-2xl font-display font-medium text-ink">{{ assessmentsThisMonth }}</p>
-        <p class="text-xs text-ink-soft mt-0.5">{{ t('dashboard.stat.assessments') }}</p>
+      <div class="bg-white border border-mist rounded-xl p-3 sm:p-4">
+        <p class="text-xl sm:text-2xl font-display font-medium text-ink">{{ assessmentsThisMonth }}</p>
+        <p class="text-[11px] sm:text-xs text-ink-soft mt-0.5">{{ t('dashboard.stat.assessments') }}</p>
       </div>
     </div>
 

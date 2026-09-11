@@ -13,7 +13,7 @@
       </span>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <button
         v-if="!recording && !audioUrl"
         class="inline-flex items-center gap-2 rounded-full bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-teal-700 text-white px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors cursor-pointer"
@@ -34,7 +34,7 @@
       </button>
 
       <template v-if="audioUrl">
-        <audio :src="audioUrl" controls class="h-9 flex-1 min-w-0" />
+        <audio :src="audioUrl" controls class="h-9 w-full sm:flex-1 sm:min-w-0" />
         <button
           class="rounded-full border border-mist bg-white px-4 py-2 text-sm font-medium text-ink-soft hover:bg-mist transition-colors cursor-pointer"
           @click="reset"

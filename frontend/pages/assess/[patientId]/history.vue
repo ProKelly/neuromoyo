@@ -17,13 +17,13 @@
       <p v-if="loading" class="text-sm text-ink-soft">Loading…</p>
       <p v-else-if="history.length === 0" class="text-sm text-ink-soft">No assessments recorded yet.</p>
       <ul v-else class="divide-y divide-mist">
-        <li v-for="a in history" :key="a.id" class="py-3 flex items-center justify-between text-sm">
-          <div>
+        <li v-for="a in history" :key="a.id" class="py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+          <div class="min-w-0">
             <span class="font-medium text-ink capitalize">{{ a.task }}</span>
             <span class="text-ink-soft ml-2">{{ new Date(a.created_at).toLocaleString() }}</span>
             <span v-if="a.performer" class="text-ink-soft ml-2">· {{ a.performer }}</span>
           </div>
-          <span v-if="a.risk_score !== null" class="font-mono text-xs px-2 py-1 rounded-full" :class="bandBadgeClass(a.risk_band)">
+          <span v-if="a.risk_score !== null" class="font-mono text-xs px-2 py-1 rounded-full shrink-0" :class="bandBadgeClass(a.risk_band)">
             {{ Math.round((a.risk_score ?? 0) * 100) }}% · {{ a.risk_band }}
           </span>
         </li>

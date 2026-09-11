@@ -9,21 +9,6 @@
 <template>
   <div class="mascot-wrap" :class="[`size-${size}`, { 'is-animated': animated }]">
     <svg viewBox="0 0 220 200" class="mascot-svg" aria-hidden="true">
-      <defs>
-        <linearGradient id="mascotBodyFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--color-teal-600)" />
-          <stop offset="100%" stop-color="var(--color-teal-900)" />
-        </linearGradient>
-        <linearGradient id="mascotSheen" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16" />
-          <stop offset="55%" stop-color="#ffffff" stop-opacity="0" />
-        </linearGradient>
-        <radialGradient id="mascotCheek" cx="35%" cy="35%" r="70%">
-          <stop offset="0%" stop-color="var(--color-teal-50)" />
-          <stop offset="100%" stop-color="var(--color-teal-100)" />
-        </radialGradient>
-      </defs>
-
       <ellipse cx="110" cy="183" rx="54" ry="8" fill="var(--color-ink)" opacity="0.12" />
 
       <g class="wave-ears">
@@ -43,16 +28,17 @@
         <path
           d="M110 24 C148 24 176 42 184 76 C190 100 190 130 172 152 C154 174 132 184 110 184
              C88 184 66 174 48 152 C30 130 30 100 36 76 C44 42 72 24 110 24 Z"
-          fill="url(#mascotBodyFill)"
+          fill="var(--color-teal-700)"
         />
         <path
           d="M110 24 C148 24 176 42 184 76 C189 96 190 121 179 141 C176 118 168 84 148 62
              C130 42 104 32 78 34 C90 27 99 24 110 24 Z"
-          fill="url(#mascotSheen)"
+          fill="#ffffff"
+          opacity="0.1"
         />
 
-        <ellipse cx="72" cy="114" rx="12" ry="7.5" fill="url(#mascotCheek)" opacity="0.85" />
-        <ellipse cx="148" cy="114" rx="12" ry="7.5" fill="url(#mascotCheek)" opacity="0.85" />
+        <ellipse cx="72" cy="114" rx="12" ry="7.5" fill="var(--color-teal-100)" opacity="0.85" />
+        <ellipse cx="148" cy="114" rx="12" ry="7.5" fill="var(--color-teal-100)" opacity="0.85" />
 
         <g class="mascot-eyes">
           <circle class="eye" cx="86" cy="92" r="9.2" fill="var(--color-ink)" />

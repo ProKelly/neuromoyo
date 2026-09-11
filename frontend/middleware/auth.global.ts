@@ -9,6 +9,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const isLoginPage = to.path === '/login'
   const isWelcomePage = to.path === '/welcome'
+  const isAboutPage = to.path === '/about'
   // Reachable regardless of auth state, and NOT force-redirected away even if
   // `user` is already truthy -- clicking an invite link gives a temporary
   // session (see accept-invite.vue's docblock), and that page needs to run
@@ -17,10 +18,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // "invalid/expired" state if there's genuinely no session.
   const isBenchmarkPage = to.path === '/benchmark'
   const isAcceptInvitePage = to.path === '/accept-invite'
-  if (isAcceptInvitePage || isBenchmarkPage) return
+  if (isAcceptInvitePage || isBenchmarkPage || isWelcomePage || isAboutPage) return
 
-  // Signed-in clinicians skip the marketing/login pages and go straight to the console.
-  if (user.value && (isLoginPage || isWelcomePage)) {
+  // Signed-in clinicians skip the login page and go straight to the console.
+  if (user.value && isLoginPage) {
     return navigateTo('/')
   }
   // Signed-out visitors land on the short welcome page first, not a bare login form.

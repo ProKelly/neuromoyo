@@ -16,7 +16,7 @@
     <!-- simplified seated figure -->
     <g>
       <circle cx="150" cy="70" r="34" fill="var(--color-teal-100)" />
-      <path d="M108 260 C104 190 112 150 150 138 C188 150 196 190 192 260 Z" fill="url(#voiceBodyFill)" />
+      <path d="M108 260 C104 190 112 150 150 138 C188 150 196 190 192 260 Z" fill="var(--color-teal-700)" />
       <path d="M150 138 C170 142 184 158 190 182 L120 182 C124 158 136 144 150 138 Z" fill="var(--color-teal-700)" opacity="0.35" />
     </g>
 
@@ -35,12 +35,5 @@
       <rect x="40" y="22" width="6" height="40" rx="3" fill="var(--color-gold-600)" />
       <rect x="50" y="32" width="6" height="20" rx="3" fill="var(--color-teal-600)" />
     </g>
-
-    <defs>
-      <linearGradient id="voiceBodyFill" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--color-teal-600)" />
-        <stop offset="100%" stop-color="var(--color-teal-900)" />
-      </linearGradient>
-    </defs>
   </svg>
 </template>

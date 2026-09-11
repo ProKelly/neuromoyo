@@ -15,7 +15,7 @@
 
     <div v-else-if="report" id="report-root" class="bg-white border border-mist rounded-2xl p-6 sm:p-8 print:border-0 print:p-0">
       <!-- Report header -->
-      <div class="flex items-start justify-between gap-4 mb-6 pb-6 border-b border-mist">
+      <div class="flex flex-wrap items-start justify-between gap-4 mb-6 pb-6 border-b border-mist">
         <div>
           <Logo size="sm" :show-tagline="false" />
           <h1 class="font-display text-2xl font-medium text-ink mt-3">{{ t('report.title') }}</h1>
@@ -26,7 +26,7 @@
             <span v-if="report.patient.facility"> · {{ report.patient.facility }}</span>
           </p>
         </div>
-        <div class="text-right text-xs text-ink-soft shrink-0">
+        <div class="text-left sm:text-right text-xs text-ink-soft shrink-0">
           <p>{{ t('report.generatedOn') }}: {{ fmtDate(report.generated_at) }}</p>
           <p v-if="report.date_range_start && report.date_range_end" class="mt-0.5">
             {{ t('report.coverage') }}: {{ fmtDate(report.date_range_start) }} – {{ fmtDate(report.date_range_end) }}
@@ -45,7 +45,7 @@
       <!-- Task completion -->
       <div class="mb-6">
         <h2 class="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-3">{{ t('report.taskSummary') }}</h2>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div v-for="ts in report.task_summaries" :key="ts.task" class="border border-mist rounded-xl p-3.5">
             <p class="text-sm font-medium text-ink">{{ t(`report.task.${ts.task}`) }}</p>
             <p v-if="ts.count === 0" class="text-xs text-ink-soft mt-1">{{ t('report.notCompleted') }}</p>

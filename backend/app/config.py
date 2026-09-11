@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     sahara_api_key: str = ""
     sahara_timeout_seconds: float = 60.0
     sahara_language: str = "en"
+    voice_intelligence_enabled: bool = True
 
     @property
     def sqlalchemy_database_url(self) -> str:
